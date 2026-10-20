@@ -1,0 +1,1087 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon Affiliate QR Generator</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --ink:#14171c; --muted:#5b6572; --line:#dde1e7;
+  --accent:#ff9900; --accent-ink:#1a1100; --accent-hover:#e68a00;
+  --ok:#0a7a3d; --warn:#9a5700; --err:#b42318; --info:#1d4ed8; --focus:#2563eb;
+  --ok-bg:#e7f6ee; --warn-bg:#fff4df; --err-bg:#fdeceb; --info-bg:#e8effd;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0f1216; --card:#171b21; --ink:#eef1f5; --muted:#9aa4b2; --line:#2a313b;
+    --ok:#4cc38a; --warn:#f5b04a; --err:#ff7b72; --info:#8fb0ff; --focus:#7aa7ff;
+    --ok-bg:#12261c; --warn-bg:#2b2112; --err-bg:#2d1716; --info-bg:#16203a;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Devanagari",sans-serif;
+  padding:24px 16px 48px;
+}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 14px;font-weight:600}
+label{display:block;font-weight:600;margin-bottom:6px}
+textarea,select{
+  width:100%; font:inherit; color:var(--ink); background:var(--bg);
+  border:1px solid var(--line); border-radius:10px; padding:10px 12px;
+}
+textarea{resize:vertical;min-height:110px;word-break:break-all}
+textarea:focus,select:focus,button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.status{min-height:1.3em;margin:8px 0 10px;font-size:.92rem}
+.status.ok{color:var(--ok)} .status.warn{color:var(--warn)} .status.err{color:var(--err)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{margin-bottom:14px}
+.note{
+  font-size:.88rem;color:var(--muted);border-left:3px solid var(--accent);
+  padding:2px 0 2px 12px;margin:18px 0 0;
+}
+.verdict{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0 6px;font-size:.92rem}
+.verdict b{display:block;font-size:.98rem}
+.verdict.v-ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.verdict.v-warn{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+.verdict.v-danger{background:var(--err-bg);border-color:var(--err);color:var(--err)}
+.verdict.v-block{background:var(--info-bg);border-color:var(--info);color:var(--info)}
+.strict{display:flex;gap:10px;align-items:flex-start;margin:4px 0 0;font-weight:400}
+.strict input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.strict small{display:block;color:var(--muted)}
+.qrbox{
+  background:#fff;border:1px solid var(--line);border-radius:12px;
+  display:grid;place-items:center;aspect-ratio:1/1;width:100%;max-width:340px;margin:0 auto 14px;padding:10px;
+}
+.qrbox canvas{width:100%;height:100%;image-rendering:pixelated;display:none}
+.qrbox.has canvas{display:block}
+.qrbox .empty{color:#6b7280;text-align:center;font-size:.92rem;padding:0 20px}
+.qrbox.has .empty{display:none}
+.qrbox.blocked{border:2px solid var(--err)}
+.qrbox.blocked .empty{color:#b42318;font-weight:600}
+.meta{text-align:center;color:var(--muted);font-size:.85rem;min-height:1.3em;margin-bottom:14px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{
+  font:inherit;font-weight:600;border-radius:10px;padding:12px 14px;cursor:pointer;
+  border:1px solid var(--line);background:var(--bg);color:var(--ink);
+}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.primary:hover:not(:disabled){background:var(--accent-hover)}
+button:disabled{opacity:.45;cursor:not-allowed}
+
+/* report */
+.report h3{font-size:1rem;margin:22px 0 10px}
+.rep-top{display:grid;grid-template-columns:1fr minmax(180px,260px);gap:16px;align-items:center}
+@media (max-width:640px){.rep-top{grid-template-columns:1fr}}
+.rep-title{font-size:1.2rem;font-weight:700;margin:0}
+.rep-title.v-ok{color:var(--ok)} .rep-title.v-warn{color:var(--warn)} .rep-title.v-danger{color:var(--err)} .rep-title.v-block{color:var(--info)}
+.dest{margin:6px 0 0;color:var(--muted);font-size:.92rem;word-break:break-all}
+.dest b{color:var(--ink)}
+.meter .track{height:12px;border-radius:99px;background:var(--line);overflow:hidden}
+.meter .fill{height:100%;border-radius:99px;background:var(--ok)}
+.meter .fill.v-warn{background:var(--warn)} .meter .fill.v-danger{background:var(--err)} .meter .fill.v-block{background:var(--info)}
+.meter .lbl{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);margin-top:6px}
+ul.list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+ul.list li{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.ftop{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.chip{font-size:.7rem;font-weight:700;letter-spacing:.06em;border-radius:6px;padding:2px 7px;border:1px solid currentColor}
+.chip.critical,.chip.high{color:var(--err);background:var(--err-bg)}
+.chip.medium,.chip.low{color:var(--warn);background:var(--warn-bg)}
+.chip.info{color:var(--info);background:var(--info-bg)}
+.chip.pass{color:var(--ok);background:var(--ok-bg)}
+.ftitle{font-weight:600}
+.pts{margin-left:auto;font-size:.82rem;color:var(--muted)}
+.fdetail{margin:4px 0 0;color:var(--muted);font-size:.92rem;word-break:break-word}
+dl.kv{display:grid;grid-template-columns:minmax(120px,200px) 1fr;gap:0;margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+dl.kv dt,dl.kv dd{margin:0;padding:8px 12px;border-bottom:1px solid var(--line);word-break:break-all;font-size:.92rem}
+dl.kv dt{color:var(--muted);background:var(--bg)}
+dl.kv dt:last-of-type,dl.kv dd:last-of-type{border-bottom:0}
+@media (max-width:560px){dl.kv{grid-template-columns:1fr}dl.kv dt{border-bottom:0;padding-bottom:0}}
+details{margin-top:16px}
+summary{cursor:pointer;font-weight:600}
+.small{font-size:.85rem;color:var(--muted)}
+.small a{color:var(--info)}
+footer{margin-top:20px;color:var(--muted);font-size:.82rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Amazon Affiliate QR Generator</h1>
+  <p class="sub">Paste your affiliate link on the left. It is safety-checked first, then you can download your QR code on the right.</p>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="h-in">
+      <h2 id="h-in">1 &middot; Paste your link</h2>
+      <div class="field" style="margin-bottom:6px">
+        <label for="link">Amazon affiliate link</label>
+        <textarea id="link" spellcheck="false" autocomplete="off" autocapitalize="off"
+          placeholder="https://www.amazon.com/dp/XXXXXXXXXX?tag=yourid-20"></textarea>
+        <div id="verdict" class="verdict" hidden role="status" aria-live="polite"></div>
+        <div id="status" class="status" aria-live="polite"></div>
+      </div>
+      <div class="field">
+        <label class="strict" for="strict">
+          <input type="checkbox" id="strict" checked>
+          <span>Strict mode: only official Amazon links
+            <small>Recommended. Any non-Amazon link is blocked, even if it looks harmless.</small></span>
+        </label>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="ecl">Error correction</label>
+          <select id="ecl">
+            <option value="0">L &ndash; smallest QR</option>
+            <option value="1" selected>M &ndash; balanced</option>
+            <option value="2">Q &ndash; better for print</option>
+            <option value="3">H &ndash; strongest</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="px">PNG size</label>
+          <select id="px">
+            <option value="512">512 px</option>
+            <option value="1024" selected>1024 px</option>
+            <option value="2048">2048 px</option>
+            <option value="4096">4096 px (print)</option>
+          </select>
+        </div>
+      </div>
+      <p class="note">
+        This is a <b>static QR</b>: your link is written directly inside the QR code. There is
+        no server, redirect or expiry in between, so the QR itself never expires. It will keep
+        scanning for as long as the Amazon link itself works.
+      </p>
+    </section>
+
+    <section class="card" aria-labelledby="h-out">
+      <h2 id="h-out">2 &middot; Download your QR</h2>
+      <div id="qrbox" class="qrbox">
+        <canvas id="cv" aria-label="Generated QR code"></canvas>
+        <div class="empty" id="emptyMsg">Your QR code will appear here</div>
+      </div>
+      <div id="meta" class="meta"></div>
+      <div class="btns">
+        <button id="dl-png" class="primary" disabled>Download PNG</button>
+        <button id="dl-svg" disabled>Download SVG</button>
+      </div>
+    </section>
+  </div>
+
+  <section id="report" class="card report" hidden aria-labelledby="h-rep">
+    <h2 id="h-rep">3 &middot; Link safety report</h2>
+    <div class="rep-top">
+      <div>
+        <p id="repTitle" class="rep-title"></p>
+        <p id="repDest" class="dest"></p>
+      </div>
+      <div class="meter" aria-label="Risk score">
+        <div class="track"><div id="repFill" class="fill"></div></div>
+        <div class="lbl"><span id="repScore"></span><span>0 safe &rarr; 100 fraud</span></div>
+      </div>
+    </div>
+
+    <h3>What we found</h3>
+    <ul id="findings" class="list"></ul>
+
+    <h3>Link breakdown</h3>
+    <dl id="parts" class="kv"></dl>
+
+    <details id="passWrap">
+      <summary id="passSum"></summary>
+      <ul id="passes" class="list" style="margin-top:10px"></ul>
+    </details>
+
+    <p class="small" style="margin-top:18px">
+      This check runs inside your browser and looks for known scam patterns. It cannot see live
+      blacklists or the contents of the page, so no tool can promise 100% protection. For anything
+      unfamiliar, also check it with
+      <a href="https://transparencyreport.google.com/safe-browsing/search" target="_blank" rel="noopener noreferrer">Google Safe Browsing</a>
+      or
+      <a href="https://www.virustotal.com/gui/home/url" target="_blank" rel="noopener noreferrer">VirusTotal</a>.
+    </p>
+  </section>
+
+  <footer>Everything runs in your browser. Your link is never uploaded anywhere. This file also works offline.</footer>
+</div>
+
+<script>
+/*QR-START*/
+/* Minimal QR Code encoder (byte mode, versions 1-40, ECC L/M/Q/H). */
+const QR = (function () {
+  const ECC_PER_BLOCK = [
+    [-1,7,10,15,20,26,18,20,24,30,18,20,24,26,30,22,24,28,30,28,28,28,28,30,30,26,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
+    [-1,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26,26,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28],
+    [-1,13,22,18,26,18,24,18,22,20,24,28,26,24,20,30,24,28,28,26,30,28,30,30,30,30,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
+    [-1,17,28,22,16,22,28,26,26,24,28,24,28,22,24,24,30,28,28,26,28,30,24,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30]
+  ];
+  const NUM_BLOCKS = [
+    [-1,1,1,1,1,1,2,2,2,2,4,4,4,4,4,6,6,6,6,7,8,8,9,9,10,12,12,12,13,14,15,16,17,18,19,19,20,21,22,24,25],
+    [-1,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10,11,13,14,16,17,17,18,20,21,23,25,26,28,29,31,33,35,37,38,40,43,45,47,49],
+    [-1,1,1,2,2,4,4,6,6,8,8,8,10,12,16,12,17,16,18,21,20,23,23,25,27,29,34,34,35,38,40,43,45,48,51,53,56,59,62,65,68],
+    [-1,1,1,2,4,4,4,5,6,8,8,11,11,16,16,18,16,19,21,25,25,25,34,30,32,35,37,40,42,45,48,51,54,57,60,63,66,70,74,77,81]
+  ];
+  const FORMAT_BITS = [1, 0, 3, 2]; // L, M, Q, H
+
+  const bit = (x, i) => ((x >>> i) & 1) !== 0;
+
+  function rawModules(ver) {
+    let r = (16 * ver + 128) * ver + 64;
+    if (ver >= 2) {
+      const n = Math.floor(ver / 7) + 2;
+      r -= (25 * n - 10) * n - 55;
+      if (ver >= 7) r -= 36;
+    }
+    return r;
+  }
+  function dataCodewords(ver, ecl) {
+    return Math.floor(rawModules(ver) / 8) - ECC_PER_BLOCK[ecl][ver] * NUM_BLOCKS[ecl][ver];
+  }
+
+  function gfMul(x, y) {
+    let z = 0;
+    for (let i = 7; i >= 0; i--) {
+      z = (z << 1) ^ ((z >>> 7) * 0x11D);
+      z ^= ((y >>> i) & 1) * x;
+    }
+    return z;
+  }
+  function rsDivisor(deg) {
+    const res = new Array(deg).fill(0);
+    res[deg - 1] = 1;
+    let root = 1;
+    for (let i = 0; i < deg; i++) {
+      for (let j = 0; j < res.length; j++) {
+        res[j] = gfMul(res[j], root);
+        if (j + 1 < res.length) res[j] ^= res[j + 1];
+      }
+      root = gfMul(root, 2);
+    }
+    return res;
+  }
+  function rsRemainder(data, div) {
+    const res = div.map(() => 0);
+    for (const b of data) {
+      const f = b ^ res.shift();
+      res.push(0);
+      div.forEach((c, i) => { res[i] ^= gfMul(c, f); });
+    }
+    return res;
+  }
+
+  function addEccAndInterleave(data, ver, ecl) {
+    const nBlocks = NUM_BLOCKS[ecl][ver], eccLen = ECC_PER_BLOCK[ecl][ver];
+    const raw = Math.floor(rawModules(ver) / 8);
+    const nShort = nBlocks - (raw % nBlocks);
+    const shortLen = Math.floor(raw / nBlocks);
+    const blocks = [];
+    const div = rsDivisor(eccLen);
+    for (let i = 0, k = 0; i < nBlocks; i++) {
+      const dat = data.slice(k, k + shortLen - eccLen + (i < nShort ? 0 : 1));
+      k += dat.length;
+      const ecc = rsRemainder(dat, div);
+      if (i < nShort) dat.push(0);
+      blocks.push(dat.concat(ecc));
+    }
+    const out = [];
+    for (let i = 0; i < blocks[0].length; i++) {
+      blocks.forEach((blk, j) => {
+        if (i !== shortLen - eccLen || j >= nShort) out.push(blk[i]);
+      });
+    }
+    return out;
+  }
+
+  function alignPositions(ver, size) {
+    if (ver === 1) return [];
+    const n = Math.floor(ver / 7) + 2;
+    const step = ver === 32 ? 26 : Math.ceil((ver * 4 + 4) / (n * 2 - 2)) * 2;
+    const res = [6];
+    for (let pos = size - 7; res.length < n; pos -= step) res.splice(1, 0, pos);
+    return res;
+  }
+
+  function penalty(m, size) {
+    let result = 0;
+    const P1 = [1,0,1,1,1,0,1,0,0,0,0], P2 = [0,0,0,0,1,0,1,1,1,0,1];
+    const lines = [];
+    for (let i = 0; i < size; i++) {
+      lines.push(m[i]);
+      lines.push(m.map(r => r[i]));
+    }
+    for (const line of lines) {
+      let run = 1;
+      for (let i = 1; i < size; i++) {
+        if (line[i] === line[i - 1]) run++;
+        else { if (run >= 5) result += run - 2; run = 1; }
+      }
+      if (run >= 5) result += run - 2;
+      for (let i = 0; i + 11 <= size; i++) {
+        let a = true, b = true;
+        for (let k = 0; k < 11; k++) {
+          const v = line[i + k] ? 1 : 0;
+          if (v !== P1[k]) a = false;
+          if (v !== P2[k]) b = false;
+        }
+        if (a) result += 40;
+        if (b) result += 40;
+      }
+    }
+    let dark = 0;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        if (m[y][x]) dark++;
+        if (x < size - 1 && y < size - 1) {
+          const c = m[y][x];
+          if (c === m[y][x + 1] && c === m[y + 1][x] && c === m[y + 1][x + 1]) result += 3;
+        }
+      }
+    }
+    const total = size * size;
+    const k = Math.ceil(Math.abs(dark * 20 - total * 10) / total) - 1;
+    return result + Math.max(0, k) * 10;
+  }
+
+  /** Returns {version, size, modules[y][x] (true = dark)} */
+  function encode(text, ecl) {
+    if (!(ecl >= 0 && ecl <= 3)) ecl = 1;
+    const bytes = Array.from(new TextEncoder().encode(text));
+    if (!bytes.length) throw new Error("Empty text");
+
+    let ver = 1;
+    for (;; ver++) {
+      const ccBits = ver <= 9 ? 8 : 16;
+      if (4 + ccBits + bytes.length * 8 <= dataCodewords(ver, ecl) * 8) break;
+      if (ver >= 40) throw new Error("The link is too long to fit in a QR code.");
+    }
+
+    const bits = [];
+    const push = (val, len) => { for (let i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+    push(4, 4);
+    push(bytes.length, ver <= 9 ? 8 : 16);
+    bytes.forEach(b => push(b, 8));
+    const cap = dataCodewords(ver, ecl) * 8;
+    push(0, Math.min(4, cap - bits.length));
+    push(0, (8 - (bits.length % 8)) % 8);
+    for (let pad = 0xEC; bits.length < cap; pad ^= 0xEC ^ 0x11) push(pad, 8);
+    const data = new Array(bits.length / 8).fill(0);
+    bits.forEach((b, i) => { data[i >>> 3] |= b << (7 - (i & 7)); });
+
+    const codewords = addEccAndInterleave(data, ver, ecl);
+
+    const size = ver * 4 + 17;
+    const m = Array.from({ length: size }, () => new Array(size).fill(false));
+    const fn = Array.from({ length: size }, () => new Array(size).fill(false));
+    const setFn = (x, y, dark) => { m[y][x] = dark; fn[y][x] = true; };
+
+    function drawFormat(mask) {
+      const d = (FORMAT_BITS[ecl] << 3) | mask;
+      let rem = d;
+      for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+      const b = ((d << 10) | rem) ^ 0x5412;
+      for (let i = 0; i <= 5; i++) setFn(8, i, bit(b, i));
+      setFn(8, 7, bit(b, 6));
+      setFn(8, 8, bit(b, 7));
+      setFn(7, 8, bit(b, 8));
+      for (let i = 9; i < 15; i++) setFn(14 - i, 8, bit(b, i));
+      for (let i = 0; i < 8; i++) setFn(size - 1 - i, 8, bit(b, i));
+      for (let i = 8; i < 15; i++) setFn(8, size - 15 + i, bit(b, i));
+      setFn(8, size - 8, true);
+    }
+    function drawVersion() {
+      if (ver < 7) return;
+      let rem = ver;
+      for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+      const b = (ver << 12) | rem;
+      for (let i = 0; i < 18; i++) {
+        const c = bit(b, i), a = size - 11 + (i % 3), q = Math.floor(i / 3);
+        setFn(a, q, c);
+        setFn(q, a, c);
+      }
+    }
+    function finder(cx, cy) {
+      for (let dy = -4; dy <= 4; dy++) {
+        for (let dx = -4; dx <= 4; dx++) {
+          const dist = Math.max(Math.abs(dx), Math.abs(dy));
+          const x = cx + dx, y = cy + dy;
+          if (x >= 0 && x < size && y >= 0 && y < size) setFn(x, y, dist !== 2 && dist !== 4);
+        }
+      }
+    }
+    function align(cx, cy) {
+      for (let dy = -2; dy <= 2; dy++)
+        for (let dx = -2; dx <= 2; dx++)
+          setFn(cx + dx, cy + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+    }
+
+    for (let i = 0; i < size; i++) { setFn(6, i, i % 2 === 0); setFn(i, 6, i % 2 === 0); }
+    finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+    const ap = alignPositions(ver, size), n = ap.length;
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++)
+        if (!((i === 0 && j === 0) || (i === 0 && j === n - 1) || (i === n - 1 && j === 0)))
+          align(ap[i], ap[j]);
+    drawFormat(0);
+    drawVersion();
+
+    let idx = 0;
+    for (let right = size - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (let vert = 0; vert < size; vert++) {
+        for (let j = 0; j < 2; j++) {
+          const x = right - j;
+          const upward = ((right + 1) & 2) === 0;
+          const y = upward ? size - 1 - vert : vert;
+          if (!fn[y][x] && idx < codewords.length * 8) {
+            m[y][x] = bit(codewords[idx >>> 3], 7 - (idx & 7));
+            idx++;
+          }
+        }
+      }
+    }
+
+    function applyMask(mask) {
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          let inv;
+          switch (mask) {
+            case 0: inv = (x + y) % 2 === 0; break;
+            case 1: inv = y % 2 === 0; break;
+            case 2: inv = x % 3 === 0; break;
+            case 3: inv = (x + y) % 3 === 0; break;
+            case 4: inv = (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0; break;
+            case 5: inv = ((x * y) % 2) + ((x * y) % 3) === 0; break;
+            case 6: inv = (((x * y) % 2) + ((x * y) % 3)) % 2 === 0; break;
+            default: inv = (((x + y) % 2) + ((x * y) % 3)) % 2 === 0;
+          }
+          if (!fn[y][x] && inv) m[y][x] = !m[y][x];
+        }
+      }
+    }
+    let best = 0, bestPen = Infinity;
+    for (let mk = 0; mk < 8; mk++) {
+      applyMask(mk);
+      drawFormat(mk);
+      const p = penalty(m, size);
+      if (p < bestPen) { bestPen = p; best = mk; }
+      applyMask(mk);
+    }
+    applyMask(best);
+    drawFormat(best);
+
+    return { version: ver, size, modules: m };
+  }
+  return { encode };
+})();
+/*QR-END*/
+
+/*ANALYZER-START*/
+/* Link safety analyzer: pure heuristics, runs fully offline. */
+const LinkCheck = (function () {
+  const AMAZON_TLDS = ["com","in","co.uk","de","fr","it","es","ca","com.au","co.jp","com.br","com.mx","ae","sa","sg","nl","se","pl","com.tr","eg","com.be","ie","cn"];
+  const AMAZON_SHORT = ["amzn.to","a.co","amzn.com","amzn.in","amzn.eu"];
+  const MULTI = new Set(["co.uk","org.uk","ac.uk","gov.uk","com.au","net.au","org.au","co.in","net.in","org.in","firm.in","gen.in","ind.in","co.jp","ne.jp","or.jp","com.br","com.mx","com.tr","com.cn","com.sg","com.hk","com.my","com.pk","com.bd","com.ng","co.za","co.nz","co.id","co.kr","com.ph","com.vn","com.eg","com.sa","com.ar","com.co","com.pe","com.ua","co.il","com.tw","co.th"]);
+  const HOSTING = ["github.io","blogspot.com","weebly.com","wixsite.com","netlify.app","vercel.app","pages.dev","workers.dev","ngrok.io","ngrok-free.app","trycloudflare.com","herokuapp.com","web.app","firebaseapp.com","glitch.me","repl.co","replit.app","onrender.com","surge.sh","000webhostapp.com","infinityfreeapp.com","rf.gd","carrd.co","sites.google.com","webflow.io"];
+  const SHORTENERS = ["bit.ly","tinyurl.com","t.co","cutt.ly","rb.gy","is.gd","shorturl.at","ow.ly","goo.gl","tiny.cc","rebrand.ly","s.id","v.gd","bit.do","t.ly","lnkd.in","buff.ly","qrco.de","tr.ee","shorturl.asia","urlz.fr","clck.ru"];
+  const BAD_TLDS = new Set(["xyz","top","click","loan","work","zip","mov","gq","tk","ml","cf","ga","icu","buzz","rest","cam","monster","support","country","kim","party","review","stream","download","racing","win","bid","trade","men","date","cyou","sbs","cfd","quest","vip"]);
+  const BRANDS = [
+    ["PayPal","paypal",["paypal.com","paypal.me"]],
+    ["Google","google",["google.com","google.co.in","goo.gl"]],
+    ["Flipkart","flipkart",["flipkart.com","fkrt.it"]],
+    ["Paytm","paytm",["paytm.com","paytmbank.com","paytm.in"]],
+    ["PhonePe","phonepe",["phonepe.com"]],
+    ["Apple","apple",["apple.com","icloud.com"]],
+    ["Microsoft","microsoft",["microsoft.com","live.com","office.com","microsoftonline.com","outlook.com","azure.com"]],
+    ["Netflix","netflix",["netflix.com"]],
+    ["Facebook","facebook",["facebook.com","fb.com","fb.me"]],
+    ["Instagram","instagram",["instagram.com"]],
+    ["WhatsApp","whatsapp",["whatsapp.com","whatsapp.net","wa.me"]],
+    ["YouTube","youtube",["youtube.com","youtu.be"]],
+    ["IRCTC","irctc",["irctc.co.in","irctc.com"]],
+    ["HDFC Bank","hdfc",["hdfcbank.com","hdfc.com"]],
+    ["ICICI Bank","icici",["icicibank.com","icici.com"]],
+    ["SBI","sbi",["sbi.co.in","onlinesbi.sbi","onlinesbi.com","sbi.bank.in"]],
+    ["Axis Bank","axisbank",["axisbank.com"]],
+    ["Kotak","kotak",["kotak.com"]],
+    ["Myntra","myntra",["myntra.com"]],
+    ["Meesho","meesho",["meesho.com"]],
+    ["Jio","jio",["jio.com"]],
+    ["Airtel","airtel",["airtel.in","airtel.com"]],
+    ["Binance","binance",["binance.com"]],
+    ["Telegram","telegram",["telegram.org","t.me"]]
+  ];
+  const SCAM_WORDS = ["login","signin","sign-in","verify","verification","secure","security","account","update","billing","wallet","kyc","otp","refund","prize","reward","gift","claim","lucky","winner","free","bonus","support","helpdesk","recover","suspend","suspended","locked","unlock","password","bank","upi","crypto","airdrop","giveaway","cashback","lottery","confirm","validate","alert","limited"];
+  const REDIRECT_KEYS = new Set(["url","u","redirect","redirect_uri","redirecturl","return","returnurl","return_to","next","goto","dest","destination","target","link","continue","r","to","out"]);
+  const CONF = {"а":"a","е":"e","о":"o","р":"p","с":"c","у":"y","х":"x","і":"i","ј":"j","ѕ":"s","һ":"h","ԁ":"d","ɡ":"g","ӏ":"l","ո":"n","ս":"u","ο":"o","α":"a","ν":"v","ι":"i","κ":"k","τ":"t","ρ":"p","υ":"u","ɑ":"a","ꜱ":"s","ⅼ":"l","ᴀ":"a","ⅰ":"i"};
+  const PASSES = [
+    ["scheme","Connection is encrypted (https)"],
+    ["creds","No hidden username or password in the link"],
+    ["ip","Uses a proper domain name, not a raw IP address"],
+    ["idn","No look-alike or mixed-alphabet characters"],
+    ["brand","No brand impersonation found"],
+    ["tld","Domain ending is not on the high-risk list"],
+    ["hosting","Not on a free hosting or tunnel service"],
+    ["shortener","Not a third-party link shortener"],
+    ["structure","Normal domain structure"],
+    ["port","Standard web port"],
+    ["keywords","No scam-style keywords"],
+    ["redirect","No hidden redirect to another site"],
+    ["encoding","No suspicious encoding tricks"]
+  ];
+
+  function isOfficialAmazon(host) {
+    for (const t of AMAZON_TLDS) { const d = "amazon." + t; if (host === d || host.endsWith("." + d)) return true; }
+    for (const d of AMAZON_SHORT) if (host === d || host.endsWith("." + d)) return true;
+    return false;
+  }
+  const endsWithDomain = (host, d) => host === d || host.endsWith("." + d);
+
+  function osa(a, b) {
+    const m = a.length, n = b.length, d = [];
+    for (let i = 0; i <= m; i++) { d[i] = [i]; }
+    for (let j = 0; j <= n; j++) d[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        const c = a[i - 1] === b[j - 1] ? 0 : 1;
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+    return d[m][n];
+  }
+
+  function norm(s) {
+    s = s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "");
+    s = Array.from(s).map(c => CONF[c] || c).join("");
+    s = s.replace(/rn/g, "m").replace(/vv/g, "w");
+    return s.replace(/0/g, "o").replace(/1/g, "l").replace(/3/g, "e").replace(/4/g, "a").replace(/5/g, "s").replace(/7/g, "t").replace(/\$/g, "s").replace(/@/g, "a");
+  }
+
+  function punyDecode(input) {
+    const base = 36, tMin = 1, tMax = 26, skew = 38, damp = 700;
+    const adapt = (delta, num, first) => {
+      delta = first ? Math.floor(delta / damp) : delta >> 1;
+      delta += Math.floor(delta / num);
+      let k = 0;
+      while (delta > (((base - tMin) * tMax) >> 1)) { delta = Math.floor(delta / (base - tMin)); k += base; }
+      return k + Math.floor(((base - tMin + 1) * delta) / (delta + skew));
+    };
+    let n = 128, i = 0, bias = 72;
+    const out = [];
+    let b = input.lastIndexOf("-");
+    if (b < 0) b = 0;
+    for (let j = 0; j < b; j++) out.push(input.charCodeAt(j));
+    for (let idx = b > 0 ? b + 1 : 0; idx < input.length;) {
+      const oldi = i;
+      let w = 1;
+      for (let k = base; ; k += base) {
+        if (idx >= input.length) throw new Error("bad punycode");
+        const cp = input.charCodeAt(idx++);
+        let digit;
+        if (cp >= 48 && cp <= 57) digit = cp - 22;
+        else if (cp >= 65 && cp <= 90) digit = cp - 65;
+        else if (cp >= 97 && cp <= 122) digit = cp - 97;
+        else throw new Error("bad punycode");
+        i += digit * w;
+        const t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
+        if (digit < t) break;
+        w *= base - t;
+      }
+      const len = out.length + 1;
+      bias = adapt(i - oldi, len, oldi === 0);
+      n += Math.floor(i / len);
+      i %= len;
+      out.splice(i++, 0, n);
+    }
+    return String.fromCodePoint.apply(null, out);
+  }
+  function decodeLabel(l) {
+    if (!l.startsWith("xn--")) return l;
+    try { return punyDecode(l.slice(4)); } catch (e) { return l; }
+  }
+
+  function splitHost(host) {
+    const labels = host.split(".");
+    let suffixLen = 1;
+    if (labels.length >= 3 && MULTI.has(labels.slice(-2).join("."))) suffixLen = 2;
+    let hosting = null;
+    for (const h of HOSTING) if (endsWithDomain(host, h)) { hosting = h; break; }
+    if (hosting) suffixLen = hosting.split(".").length;
+    const regLabels = Math.min(labels.length, suffixLen + 1);
+    return {
+      labels,
+      registrable: labels.slice(-regLabels).join("."),
+      sld: labels[labels.length - regLabels],
+      sub: labels.slice(0, labels.length - regLabels),
+      suffix: labels.slice(-suffixLen).join("."),
+      tld: labels[labels.length - 1],
+      hosting
+    };
+  }
+
+  function finish(R, fired, strict) {
+    R.score = Math.min(100, R.findings.reduce((a, f) => a + (f.pts || 0), 0));
+    R.findings.sort((a, b) => b.pts - a.pts);
+    if (!R.unsupported) for (const p of PASSES) if (!fired.has(p[0])) R.findings.push({ id: p[0], sev: "pass", title: p[1], detail: "", pts: 0 });
+    const top = R.findings.find(f => f.pts > 0);
+    if (R.score >= 60) {
+      R.verdictKind = "danger"; R.verdict = "Dangerous: this link looks fraudulent"; R.blocked = true; R.reason = "fraud";
+    } else if (R.score >= 35) {
+      R.verdictKind = "danger"; R.verdict = "Suspicious: QR creation blocked"; R.blocked = true; R.reason = "fraud";
+    } else if (strict && !R.official) {
+      R.verdictKind = "block"; R.verdict = "Blocked by strict mode: not an official Amazon link"; R.blocked = true; R.reason = "strict";
+    } else if (R.score >= 15) {
+      R.verdictKind = "warn"; R.verdict = "Caution: review the warnings";
+    } else {
+      R.verdictKind = "ok";
+      R.verdict = R.official ? "Looks safe: official Amazon link" : "No fraud signs found (not verified as safe)";
+    }
+    if (R.reason === "fraud" && top) R.detail = "Main reason: " + top.title + ".";
+    else if (R.reason === "strict") R.detail = "Untick strict mode to allow other links that pass the fraud check.";
+    else if (R.verdictKind === "warn" && top) R.detail = top.title + ".";
+    else R.detail = "";
+    return R;
+  }
+
+  function analyze(raw, opts) {
+    const strict = !opts || opts.strict !== false;
+    const t = String(raw == null ? "" : raw).trim();
+    const R = { input: t, state: "empty", findings: [], score: 0, official: false, blocked: false, verdict: "", verdictKind: "", detail: "", reason: "", parts: null, affiliate: null, error: "", unsupported: false };
+    if (!t) return R;
+    if (/\s/.test(t)) { R.state = "error"; R.error = "The link contains a space or line break. Please enter a single link only."; return R; }
+    let u;
+    try { u = new URL(t); } catch (e) { R.state = "error"; R.error = "This does not look like a valid link. It should start with https://"; return R; }
+    R.state = "ok";
+
+    const fired = new Set();
+    const add = (id, sev, title, detail, pts) => { fired.add(id); R.findings.push({ id, sev, title, detail, pts: pts || 0 }); };
+
+    const scheme = u.protocol.slice(0, -1).toLowerCase();
+    if (scheme !== "http" && scheme !== "https") {
+      const bad = ["javascript", "data", "vbscript", "file", "blob", "about", "intent"].indexOf(scheme) >= 0;
+      R.unsupported = true;
+      R.parts = { scheme, full: t };
+      add("scheme", bad ? "critical" : "high",
+        bad ? "Dangerous link type (" + scheme + ":)" : "Not a normal web link (" + scheme + ":)",
+        bad ? "This type of link can run code or read data instead of opening a shop page. It must never be turned into a QR code."
+            : "Only normal web links (http/https) are supported. Other link types, such as payment or app links, are a common way to trick people.",
+        bad ? 100 : 40);
+      return finish(R, fired, strict);
+    }
+
+    const host = u.hostname.replace(/\.$/, "").toLowerCase();
+    const authority = (t.match(/^[a-z][a-z0-9+.\-]*:\/\/([^\/?#]*)/i) || [0, ""])[1];
+    const rawHost = authority.replace(/^.*@/, "").replace(/:\d*$/, "");
+    const isIP = /^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.startsWith("[");
+    const sh = splitHost(host);
+    const decodedLabels = sh.labels.map(decodeLabel);
+    const unicodeHost = decodedLabels.join(".");
+    const isIDN = sh.labels.some(l => l.startsWith("xn--"));
+    const official = !isIP && isOfficialAmazon(host);
+    R.official = official;
+    const isShortOfficial = official && AMAZON_SHORT.some(d => endsWithDomain(host, d));
+
+    // scheme
+    if (scheme === "http") add("scheme", "medium", "Connection is not encrypted (http)", "Legitimate shops use https. With plain http, anything sent can be read or changed on the way.", official ? 10 : 15);
+
+    // credentials
+    if (u.username || u.password) add("creds", "critical", "Hidden username in the link", "Everything before the \"@\" (\"" + u.username + "\") is NOT where the link goes. The real destination is \"" + host + "\". Scammers use this trick to make a fake link look like Amazon.", 60);
+
+    // IP
+    if (isIP) add("ip", "high", "Link uses an IP address instead of a domain name", "Real shops use a proper domain name. Raw IP addresses are very common in phishing and malware links.", 45);
+    if (/(^|\.)0x[0-9a-f]+/i.test(rawHost) || /^\d{7,}$/.test(rawHost) || /^0\d+\.\d/.test(rawHost)) add("ip", "critical", "IP address is disguised", "The address is written in an unusual number format (\"" + rawHost + "\") to hide that it is a raw IP address.", 60);
+
+    // encoded host
+    if (rawHost.indexOf("%") >= 0) add("encoding", "high", "Domain name contains encoded characters", "Normal domains never contain % codes. This is used to disguise the real address.", 40);
+
+    // IDN / look-alike alphabets
+    if (isIDN) {
+      const mixed = decodedLabels.some(l => /[a-z]/i.test(l) && /[^\x00-\x7f]/.test(l));
+      if (mixed) add("idn", "high", "Mixes alphabets (look-alike letters)", "The domain \"" + unicodeHost + "\" mixes different alphabets. This is the homograph trick, for example a Cyrillic \"а\" replacing a Latin \"a\". Real address: " + host + ".", 55);
+      else add("idn", "medium", "Domain uses non-English characters", "Look-alike characters can imitate famous brands. Real (punycode) address: " + host + ".", 25);
+    }
+
+    // brand impersonation
+    if (!official && !isIP) {
+      const subN = sh.sub.map(l => norm(decodeLabel(l)));
+      const sldRaw = decodeLabel(sh.sld);
+      const sldN = norm(sldRaw);
+      const sldNoDash = sldN.replace(/-/g, "");
+      const tokens = sldN.split(/[-_]/).filter(Boolean);
+      let brandDone = false;
+      const awsOnly = sh.registrable === "amazonaws.com";
+
+      if (awsOnly) {
+        add("brand", "high", "Amazon cloud storage, not a shop", "amazonaws.com is Amazon's cloud hosting. Anyone can publish a page there, and scammers do. It is not an Amazon shopping link.", 40);
+        brandDone = true;
+      }
+      if (!brandDone && subN.some(s => s.replace(/-/g, "").indexOf("amazon") >= 0 || s.indexOf("amzn") >= 0)) {
+        add("brand", "critical", "Amazon name used inside an unrelated domain", "\"" + host + "\" really belongs to \"" + sh.registrable + "\", not Amazon. The text before the real domain is just a label chosen by whoever owns it.", 75);
+        brandDone = true;
+      }
+      if (!brandDone) {
+        if (sldNoDash === "amazon") {
+          add("brand", "critical", sldRaw.toLowerCase() === "amazon" ? "Fake Amazon domain" : "Look-alike spelling of \"amazon\"",
+            "\"" + sh.registrable + "\" copies the Amazon name but is not an official Amazon domain.", sldRaw.toLowerCase() === "amazon" ? 70 : 75);
+          brandDone = true;
+        } else if (sldNoDash.indexOf("amazon") >= 0 || sldNoDash.indexOf("amzn") >= 0) {
+          add("brand", "high", "Domain contains the Amazon name", "\"" + sh.registrable + "\" is not an Amazon domain even though it uses the Amazon name. Scam sites do this to look official.", 60);
+          brandDone = true;
+        } else {
+          const cand = tokens.concat([sldNoDash]);
+          if (cand.some(tk => tk.length >= 5 && tk !== "amazon" && osa(tk, "amazon") <= 1)) {
+            add("brand", "critical", "Misspelled Amazon name (typosquatting)", "\"" + sh.registrable + "\" is one letter away from \"amazon\". This is a classic fake-shop trick.", 65);
+            brandDone = true;
+          }
+        }
+      }
+      if (!brandDone) {
+        for (const b of BRANDS) {
+          const name = b[0], key = b[1], offs = b[2];
+          if (offs.some(d => endsWithDomain(host, d))) continue;
+          const allToks = tokens.concat(subN.join("-").split(/[-_]/)).filter(Boolean);
+          let hit = null;
+          if (allToks.some(tk => tk === key)) hit = "uses";
+          else if (key.length >= 6 && (sldNoDash.indexOf(key) >= 0 || subN.some(s => s.replace(/-/g, "").indexOf(key) >= 0))) hit = "uses";
+          else if (key.length >= 6 && allToks.some(tk => tk.length >= 5 && tk !== key && osa(tk, key) <= 1)) hit = "typo";
+          if (hit) {
+            add("brand", hit === "typo" ? "critical" : "high", "Pretends to be " + name,
+              "\"" + host + "\" is not an official " + name + " domain, but its name imitates " + name + ". This is a common way to steal logins and payments.", hit === "typo" ? 55 : 45);
+            brandDone = true;
+            break;
+          }
+        }
+      }
+      if (/amazon|amzn/i.test(decodeURIComponentSafe(u.pathname + u.search))) {
+        add("brand", "medium", "Pretends to be an Amazon page", "The address mentions Amazon after the domain, but the domain (\"" + sh.registrable + "\") is not Amazon.", 20);
+      }
+    }
+
+    // risky ending / hosting / shorteners (only for non-official)
+    if (!official) {
+      if (BAD_TLDS.has(sh.tld)) add("tld", "medium", "Risky domain ending \".​" + sh.tld + "\"", "This ending is cheap and heavily used for scam, phishing and spam sites. Not proof by itself, but a warning sign.", 20);
+      if (sh.hosting) add("hosting", "medium", "Hosted on a free or tunnel service (" + sh.hosting + ")", "Anyone can publish a page here within minutes, including scammers. An official shop would use its own domain.", 20);
+      if (SHORTENERS.some(d => endsWithDomain(host, d))) add("shortener", "high", "Link shortener hides the real destination", "Services like this can point anywhere and QR codes built on them can stop working. Use the full Amazon link or Amazon's own amzn.to link instead.", 30);
+
+      // structure
+      const probs = []; let sp = 0;
+      const hy = (sh.sld.match(/-/g) || []).length;
+      if (hy >= 3) { probs.push(hy + " hyphens in the domain name"); sp += 12; }
+      if (host.length > 35) { probs.push("very long domain name (" + host.length + " characters)"); sp += 8; }
+      if (sh.sub.length >= 4) { probs.push(sh.sub.length + " sub-domain levels"); sp += 12; }
+      const digits = (sh.sld.match(/\d/g) || []).length;
+      if (digits >= 4) { probs.push("many digits in the name"); sp += 8; }
+      if (probs.length) add("structure", "low", "Unusual domain structure", "Found: " + probs.join(", ") + ".", Math.min(20, sp));
+
+      // keywords
+      const hostWords = (sh.sub.join("-") + "-" + sh.sld).toLowerCase();
+      const hostHits = SCAM_WORDS.filter(w => hostWords.indexOf(w) >= 0);
+      const pathText = decodeURIComponentSafe(u.pathname + " " + u.search).toLowerCase();
+      const pathHits = SCAM_WORDS.filter(w => pathText.indexOf(w) >= 0 && hostHits.indexOf(w) < 0);
+      const kp = Math.min(24, hostHits.length * 8) + Math.min(18, pathHits.length * 6);
+      if (kp > 0) add("keywords", kp >= 20 ? "high" : "medium", "Scam-style words in the address", "Found: " + hostHits.concat(pathHits).join(", ") + ". Phishing links often use words like these to look urgent or official.", kp);
+
+      if (t.length > 300) add("structure", "low", "Very long link", "This link is " + t.length + " characters long. Long links are often used to bury the real destination.", 8);
+    }
+
+    // port
+    if (u.port) add("port", "medium", "Unusual port :" + u.port, "Normal shop links do not use custom ports. This is common for temporary scam servers.", 20);
+
+    // redirects (all hosts)
+    {
+      let hit = null;
+      for (const kv of u.searchParams) {
+        const k = kv[0].toLowerCase(), v = kv[1];
+        if (/^(https?:)?\/\//i.test(v.trim())) {
+          let th = "";
+          try { th = new URL(v.trim().replace(/^\/\//, "https://")).hostname.toLowerCase(); } catch (e) { th = "unknown"; }
+          if (!isOfficialAmazon(th)) { hit = { k, th, strong: REDIRECT_KEYS.has(k) }; break; }
+        }
+      }
+      if (hit) add("redirect", "high", "Link forwards to another website", "The parameter \"" + hit.k + "\" sends visitors to \"" + hit.th + "\". Scammers hide the real target behind a trusted-looking link.", 40);
+      else if (/\/https?:\/\//i.test(u.pathname)) add("redirect", "high", "Another web address is hidden inside the link", "The path of this link contains a second http(s) address, which is a common way to hide a redirect.", 30);
+    }
+
+    // encoding / backslash
+    if (/%25[0-9a-f]{2}/i.test(t)) add("encoding", "medium", "Double-encoded characters", "Text encoded twice (%25xx) is used to slip past link filters.", 15);
+    else if (!official && (t.match(/%[0-9a-f]{2}/gi) || []).length > 12) add("encoding", "low", "Heavy use of encoded characters", "A large number of % codes can hide what the link really contains.", 8);
+    if (t.indexOf("\\") >= 0) add("encoding", "medium", "Backslashes in the link", "Browsers treat \\ like /, so this can disguise the real destination.", 20);
+    if (t.length > 2000) add("structure", "low", "Extremely long link", "Links this long are rarely real shop links.", 10);
+
+    // affiliate info
+    const aff = { kind: null, tag: null, tagOk: null, asin: null };
+    if (official) {
+      if (isShortOfficial) {
+        aff.kind = "short";
+        add("aff", "info", "Amazon short link", "Short links made with Amazon's SiteStripe already contain your affiliate tag. The final destination cannot be previewed here.", 0);
+      } else {
+        aff.kind = "full";
+        aff.tag = u.searchParams.get("tag");
+        const m = u.pathname.match(/\/(?:dp|gp\/product|gp\/aw\/d|exec\/obidos\/ASIN|d)\/([A-Z0-9]{10})(?:[\/?]|$)/i);
+        if (m) aff.asin = m[1].toUpperCase();
+        if (!aff.tag) add("aff", "info", "No affiliate tag found", "This link has no tag=... part, so you will not earn commission from it. The QR can still be created.", 0);
+        else {
+          aff.tagOk = /^[a-z0-9_]{2,}-\d{2}$/i.test(aff.tag);
+          add("aff", "info", aff.tagOk ? "Affiliate tag found: " + aff.tag : "Affiliate tag looks unusual: " + aff.tag,
+            aff.tagOk ? "Commission will be credited to this tag." : "Amazon tags normally look like name-20 or name-21. Double-check yours.", 0);
+        }
+      }
+    }
+    R.affiliate = aff;
+
+    if (official) R.findings.push({ id: "domain", sev: "pass", title: "Official Amazon domain confirmed (" + host + ")", detail: "", pts: 0 });
+
+    const params = [];
+    for (const kv of u.searchParams) params.push([kv[0], kv[1]]);
+    R.parts = {
+      scheme, host, unicodeHost, isIDN, registrable: sh.registrable,
+      subdomains: sh.sub.join("."), suffix: sh.suffix, port: u.port, username: u.username,
+      path: decodeURIComponentSafe(u.pathname) || "/", params, tag: aff.tag, asin: aff.asin, isIP
+    };
+    return finish(R, fired, strict);
+  }
+
+  function decodeURIComponentSafe(s) { try { return decodeURIComponent(s); } catch (e) { return s; } }
+
+  return { analyze };
+})();
+/*ANALYZER-END*/
+
+(function () {
+  const $ = id => document.getElementById(id);
+  const link = $("link"), statusEl = $("status"), eclSel = $("ecl"), pxSel = $("px"), strictBox = $("strict");
+  const cv = $("cv"), box = $("qrbox"), meta = $("meta"), emptyMsg = $("emptyMsg"), verdictEl = $("verdict");
+  const btnPng = $("dl-png"), btnSvg = $("dl-svg");
+  const BORDER = 4; // quiet zone (modules), QR standard
+  let current = null;
+
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  const kindClass = k => ({ ok: "v-ok", warn: "v-warn", danger: "v-danger", block: "v-block" }[k] || "v-ok");
+  const SEV = { critical: "CRITICAL", high: "HIGH", medium: "MEDIUM", low: "LOW", info: "NOTE", pass: "PASS" };
+
+  function setStatus(kind, msg) {
+    statusEl.className = "status " + (kind || "");
+    statusEl.textContent = msg || "";
+  }
+
+  function renderVerdict(res) {
+    verdictEl.replaceChildren();
+    if (res.state !== "ok") { verdictEl.hidden = true; return; }
+    verdictEl.hidden = false;
+    verdictEl.className = "verdict " + kindClass(res.verdictKind);
+    verdictEl.appendChild(el("b", null, res.verdict));
+    verdictEl.appendChild(el("span", null, "Risk score " + res.score + "/100" + (res.detail ? ". " + res.detail : "")));
+  }
+
+  function addKV(dl, k, v) {
+    if (v == null || v === "") return;
+    dl.appendChild(el("dt", null, k));
+    dl.appendChild(el("dd", null, v));
+  }
+
+  function renderReport(res) {
+    const rep = $("report");
+    if (res.state !== "ok") { rep.hidden = true; return; }
+    rep.hidden = false;
+    const kc = kindClass(res.verdictKind);
+    const title = $("repTitle");
+    title.className = "rep-title " + kc;
+    title.textContent = res.verdict;
+    const p = res.parts;
+    const dest = $("repDest");
+    dest.replaceChildren();
+    if (p && p.host) {
+      dest.appendChild(document.createTextNode("This link really opens: "));
+      dest.appendChild(el("b", null, p.isIDN ? p.unicodeHost + "  (" + p.host + ")" : p.host));
+    } else {
+      dest.textContent = res.reason === "fraud" ? res.detail : "";
+    }
+    $("repFill").className = "fill " + kc;
+    $("repFill").style.width = Math.max(2, res.score) + "%";
+    $("repScore").textContent = "Risk score " + res.score + " / 100";
+
+    const ul = $("findings");
+    ul.replaceChildren();
+    const issues = res.findings.filter(f => f.sev !== "pass");
+    if (!issues.length) {
+      const li = el("li");
+      li.appendChild(el("div", "ftitle", "No warning signs found in this link."));
+      ul.appendChild(li);
+    }
+    issues.forEach(f => {
+      const li = el("li");
+      const top = el("div", "ftop");
+      top.appendChild(el("span", "chip " + f.sev, SEV[f.sev]));
+      top.appendChild(el("span", "ftitle", f.title));
+      if (f.pts > 0) top.appendChild(el("span", "pts", "+" + f.pts + " risk"));
+      li.appendChild(top);
+      if (f.detail) li.appendChild(el("p", "fdetail", f.detail));
+      ul.appendChild(li);
+    });
+
+    const dl = $("parts");
+    dl.replaceChildren();
+    addKV(dl, "Full link", res.input);
+    if (p) {
+      addKV(dl, "Scheme", p.scheme + (p.scheme === "https" ? " (encrypted)" : p.scheme === "http" ? " (not encrypted)" : ""));
+      if (p.host) {
+        addKV(dl, "Real destination (host)", p.host);
+        if (p.isIDN) addKV(dl, "Host as people see it", p.unicodeHost);
+        addKV(dl, "Registered domain", p.isIP ? "(IP address)" : p.registrable);
+        addKV(dl, "Sub-domains", p.subdomains || "none");
+        addKV(dl, "Domain ending", p.isIP ? "" : "." + p.suffix);
+        addKV(dl, "Port", p.port || "standard");
+        addKV(dl, "Username in link", p.username || "none");
+        addKV(dl, "Path", p.path);
+        addKV(dl, "Official Amazon domain", res.official ? "Yes" : "No");
+        if (p.tag) addKV(dl, "Affiliate tag", p.tag);
+        if (p.asin) addKV(dl, "Product ID (ASIN)", p.asin);
+        addKV(dl, "Parameters", p.params.length ? p.params.map(kv => kv[0] + " = " + (kv[1].length > 80 ? kv[1].slice(0, 80) + "…" : kv[1])).join("\n") : "none");
+      }
+    }
+    dl.querySelectorAll("dd").forEach(d => { d.style.whiteSpace = "pre-wrap"; });
+
+    const passes = res.findings.filter(f => f.sev === "pass");
+    $("passWrap").hidden = !passes.length;
+    $("passSum").textContent = "Checks passed (" + passes.length + ")";
+    const pl = $("passes");
+    pl.replaceChildren();
+    passes.forEach(f => {
+      const li = el("li");
+      const top = el("div", "ftop");
+      top.appendChild(el("span", "chip pass", "PASS"));
+      top.appendChild(el("span", "ftitle", f.title));
+      li.appendChild(top);
+      pl.appendChild(li);
+    });
+  }
+
+  function drawTo(canvas, modules, scale) {
+    const n = modules.length, total = (n + 2 * BORDER) * scale;
+    canvas.width = canvas.height = total;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, total, total);
+    ctx.fillStyle = "#000000";
+    for (let y = 0; y < n; y++)
+      for (let x = 0; x < n; x++)
+        if (modules[y][x]) ctx.fillRect((x + BORDER) * scale, (y + BORDER) * scale, scale, scale);
+  }
+
+  function toSVG(modules) {
+    const n = modules.length;
+    let d = "";
+    for (let y = 0; y < n; y++) {
+      let x = 0;
+      while (x < n) {
+        if (modules[y][x]) {
+          const s = x;
+          while (x < n && modules[y][x]) x++;
+          d += "M" + (s + BORDER) + "," + (y + BORDER) + "h" + (x - s) + "v1h" + (s - x) + "z";
+        } else x++;
+      }
+    }
+    const t = n + 2 * BORDER;
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + t + " " + t + '" width="' + t * 10 + '" height="' + t * 10 + '" shape-rendering="crispEdges">' +
+      '<rect width="100%" height="100%" fill="#ffffff"/><path d="' + d + '" fill="#000000"/></svg>';
+  }
+
+  function update() {
+    const res = LinkCheck.analyze(link.value, { strict: strictBox.checked });
+    current = null;
+    setStatus("", "");
+    box.classList.remove("has", "blocked");
+    emptyMsg.textContent = "Your QR code will appear here";
+    meta.textContent = "";
+
+    renderVerdict(res);
+    renderReport(res);
+
+    if (res.state === "error") setStatus("err", res.error);
+    else if (res.state === "ok") {
+      if (res.blocked) {
+        box.classList.add("blocked");
+        emptyMsg.textContent = res.reason === "fraud"
+          ? "QR blocked: this link failed the fraud check"
+          : "QR blocked: only official Amazon links are allowed in strict mode";
+      } else {
+        try {
+          current = QR.encode(res.input, parseInt(eclSel.value, 10));
+        } catch (e) {
+          setStatus("err", e.message);
+        }
+        const a = res.affiliate;
+        if (current && a && a.kind === "full") {
+          if (!a.tag) setStatus("warn", "No tag=... in this link, so you will not earn commission.");
+          else setStatus(a.tagOk ? "ok" : "warn", (a.tagOk ? "Affiliate tag found: " : "Unusual affiliate tag: ") + a.tag);
+        }
+      }
+    }
+
+    const ok = !!current;
+    box.classList.toggle("has", ok);
+    btnPng.disabled = btnSvg.disabled = !ok;
+    if (ok) {
+      const n = current.size;
+      drawTo(cv, current.modules, Math.max(1, Math.floor(640 / (n + 2 * BORDER))));
+      meta.textContent = "Version " + current.version + " · " + n + "×" + n + " modules · " + res.input.length + " characters";
+    }
+  }
+
+  async function save(blob, name) {
+    // Inside the Claude artifact viewer, plain downloads are blocked: use its downloads capability.
+    try {
+      if (window.claude && typeof window.claude.use === "function") {
+        const dl = await window.claude.use("downloads");
+        if (dl) {
+          try { await dl.save({ filename: name, data: blob }); } catch (e) { /* declined or unavailable */ }
+          return;
+        }
+      }
+    } catch (e) { /* fall through to normal download */ }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+
+  btnPng.addEventListener("click", () => {
+    if (!current) return;
+    const target = parseInt(pxSel.value, 10);
+    const scale = Math.max(1, Math.ceil(target / (current.size + 2 * BORDER)));
+    const c = document.createElement("canvas");
+    drawTo(c, current.modules, scale);
+    c.toBlob(b => save(b, "amazon-affiliate-qr.png"), "image/png");
+  });
+  btnSvg.addEventListener("click", () => {
+    if (!current) return;
+    save(new Blob([toSVG(current.modules)], { type: "image/svg+xml" }), "amazon-affiliate-qr.svg");
+  });
+
+  link.addEventListener("input", update);
+  eclSel.addEventListener("change", update);
+  strictBox.addEventListener("change", update);
+  update();
+})();
+</script>
+</body>
+</html>
+
+</body></html>
